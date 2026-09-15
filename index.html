@@ -1,92 +1,143 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>HS Portal — 3D preview</title>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0;background:#f4f4f2;color:#141414;font-family:Inter,Arial,sans-serif}
-    main{max-width:1440px;margin:auto;padding:24px}
-    .top{display:flex;justify-content:space-between;gap:24px;align-items:end;margin-bottom:16px}
-    h1{font-size:clamp(30px,4vw,58px);font-weight:500;letter-spacing:-.04em;margin:0}
-    .meta{font-size:14px;color:#666;line-height:1.5;text-align:right}
-    .viewer{position:relative;height:min(78vh,860px);min-height:520px;background:linear-gradient(#fafafa,#e5e5e1);border-radius:24px;overflow:hidden;border:1px solid #d7d7d4}
-    model-viewer{width:100%;height:100%;--poster-color:transparent;background:transparent}
-    .status{position:absolute;left:20px;top:20px;z-index:10;background:rgba(255,255,255,.92);border:1px solid #ddd;border-radius:999px;padding:9px 13px;font-size:13px;color:#555;backdrop-filter:blur(8px)}
-    .controls{display:flex;gap:10px;flex-wrap:wrap;padding-top:14px}
-    button,.link{appearance:none;border:1px solid #ccc;background:#fff;border-radius:999px;padding:10px 14px;font:inherit;font-size:13px;color:#222;cursor:pointer;text-decoration:none}
-    button:hover,.link:hover{background:#eee}
-    .hint{color:#777;font-size:12px;padding-top:10px}
-    @media(max-width:700px){main{padding:12px}.top{display:block}.meta{text-align:left;margin-top:10px}.viewer{height:68vh;min-height:430px;border-radius:16px}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Алюминиевый HS‑портал — интерактивная 3D‑модель</title>
+<style>
+  :root{--bg:#f3f3f0;--ink:#111;--muted:#6d6d69;--line:rgba(17,17,17,.12);--panel:rgba(255,255,255,.82)}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);overflow:hidden}
+  #app{height:100%;position:relative;display:grid;grid-template-rows:auto 1fr}
+  header{position:relative;z-index:4;display:flex;justify-content:space-between;gap:20px;align-items:flex-end;padding:22px 26px 12px;pointer-events:none}
+  h1{margin:0;font-size:clamp(26px,3.2vw,52px);font-weight:520;letter-spacing:-.045em;line-height:.95}
+  .sub{max-width:460px;text-align:right;color:var(--muted);font-size:13px;line-height:1.5}
+  #stage{position:relative;min-height:0;margin:0 18px 18px;border:1px solid var(--line);border-radius:24px;overflow:hidden;background:radial-gradient(circle at 50% 36%,#fff 0,#f4f5f2 40%,#e8e9e5 100%)}
+  canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+  canvas:active{cursor:grabbing}
+  .badge{position:absolute;top:18px;left:18px;z-index:3;background:var(--panel);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:12px;letter-spacing:.02em}
+  .hud{position:absolute;left:18px;bottom:18px;z-index:3;display:flex;gap:8px;flex-wrap:wrap;max-width:70%}
+  button{appearance:none;border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(14px);color:#111;padding:10px 13px;border-radius:999px;font:inherit;font-size:12px;cursor:pointer}
+  button:hover{background:#fff}
+  .info{position:absolute;right:18px;bottom:18px;width:min(330px,42vw);z-index:3;background:var(--panel);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:18px;padding:14px 15px}
+  .step{font-size:12px;color:#777;margin-bottom:6px}.step strong{color:#111;font-weight:600}
+  .bar{height:3px;background:#ddd;border-radius:9px;overflow:hidden}.bar>i{display:block;height:100%;width:0;background:#151515}
+  .specs{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-top:11px;font-size:11px;color:#777}.specs b{display:block;color:#111;font-size:13px;margin-top:2px;font-weight:560}
+  .hint{position:absolute;right:18px;top:18px;z-index:3;font-size:11px;color:#777;background:rgba(255,255,255,.72);padding:8px 10px;border-radius:999px;border:1px solid var(--line)}
+  @media(max-width:760px){header{padding:16px 16px 10px;display:block}.sub{text-align:left;margin-top:8px}.info{left:12px;right:12px;bottom:12px;width:auto}.hud{left:12px;bottom:165px;max-width:none}.hint{display:none}#stage{margin:0 8px 8px;border-radius:16px}}
+</style>
 </head>
 <body>
-<main>
-  <div class="top">
-    <h1>Алюминиевый HS‑портал</h1>
-    <div class="meta">4,8 × 2,6 м · низкий порог ~20 мм<br>ручка → подъём → сдвиг → закрытие</div>
-  </div>
-
-  <div class="viewer">
-    <div class="status" id="status">Загрузка 3D‑модели…</div>
-    <model-viewer id="portal"
-      src="https://raw.githubusercontent.com/kssafonova/gdetotaknado/main/models/aluminium_HS_portal_animated.glb"
-      alt="Алюминиевый подъёмно-раздвижной HS-портал"
-      camera-controls
-      autoplay
-      animation-name="HS_open_close"
-      shadow-intensity="1"
-      shadow-softness="0.8"
-      exposure="1.1"
-      loading="eager"
-      reveal="auto"
-      interaction-prompt="auto"
-      camera-target="0m 1.25m 0m"
-      camera-orbit="0deg 78deg 7.5m"
-      field-of-view="32deg"
-      min-camera-orbit="auto 55deg 4m"
-      max-camera-orbit="auto 100deg 14m">
-    </model-viewer>
-  </div>
-
-  <div class="controls">
-    <button id="front">Вид спереди</button>
-    <button id="angle">Под углом</button>
-    <button id="play">Запустить анимацию</button>
-    <a class="link" href="https://raw.githubusercontent.com/kssafonova/gdetotaknado/main/models/aluminium_HS_portal_animated.glb">Открыть GLB напрямую</a>
-  </div>
-  <div class="hint">Модель можно вращать мышью/пальцем и масштабировать колесом или жестом.</div>
-</main>
+<div id="app">
+  <header>
+    <h1>Алюминиевый<br>HS‑портал</h1>
+    <div class="sub">Интерактивная 3D‑модель подъёмно‑раздвижной системы. Рендерится прямо в браузере — без загрузки GLB и внешнего 3D‑viewer.</div>
+  </header>
+  <section id="stage">
+    <canvas id="gl"></canvas>
+    <div class="badge">HS · lift &amp; slide</div>
+    <div class="hint">Перетаскивайте — вращение · колесо — масштаб</div>
+    <div class="hud">
+      <button id="play">Пауза</button>
+      <button id="front">Вид спереди</button>
+      <button id="angle">Под углом</button>
+      <button id="detail">Порог крупнее</button>
+    </div>
+    <aside class="info">
+      <div class="step">Сейчас: <strong id="stepText">поворот ручки</strong></div>
+      <div class="bar"><i id="progress"></i></div>
+      <div class="specs">
+        <span>Проём<b>4,8 × 2,6 м</b></span>
+        <span>Порог<b>≈ 20 мм</b></span>
+        <span>Подъём створки<b>≈ 12 мм</b></span>
+        <span>Ход створки<b>≈ 2,25 м</b></span>
+      </div>
+    </aside>
+  </section>
+</div>
 <script>
-  const model = document.getElementById('portal');
-  const status = document.getElementById('status');
+(() => {
+'use strict';
+const canvas=document.getElementById('gl');
+const gl=canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:false});
+if(!gl){ document.getElementById('stage').innerHTML='<div style="padding:40px">WebGL недоступен в этом браузере.</div>'; return; }
 
-  model.addEventListener('load', () => {
-    status.textContent = '3D‑модель загружена';
-    setTimeout(() => status.style.opacity = '0', 1400);
-  });
-  model.addEventListener('error', (e) => {
-    console.error('model-viewer error', e);
-    status.textContent = 'Ошибка загрузки GLB — нажмите «Открыть GLB напрямую»';
-    status.style.color = '#8b1d1d';
-  });
+const VS=`
+attribute vec3 aPos; attribute vec3 aNormal;
+uniform mat4 uModel; uniform mat4 uVP;
+varying vec3 vN; varying vec3 vW;
+void main(){vec4 w=uModel*vec4(aPos,1.0);vW=w.xyz;vN=mat3(uModel)*aNormal;gl_Position=uVP*w;}`;
+const FS=`
+precision highp float;
+uniform vec4 uColor; uniform vec3 uEye; uniform float uGloss;
+varying vec3 vN; varying vec3 vW;
+void main(){vec3 N=normalize(vN);vec3 L=normalize(vec3(-0.42,0.82,0.58));float d=max(dot(N,L),0.0);vec3 V=normalize(uEye-vW);vec3 H=normalize(L+V);float s=pow(max(dot(N,H),0.0),mix(12.0,70.0,uGloss))*0.35*uGloss;float fres=pow(1.0-max(dot(N,V),0.0),3.0)*0.12;vec3 c=uColor.rgb*(0.34+0.72*d)+vec3(s+fres);gl_FragColor=vec4(c,uColor.a);}`;
+function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s}
+const program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,VS));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,FS));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program));gl.useProgram(program);
+const loc={pos:gl.getAttribLocation(program,'aPos'),normal:gl.getAttribLocation(program,'aNormal'),model:gl.getUniformLocation(program,'uModel'),vp:gl.getUniformLocation(program,'uVP'),color:gl.getUniformLocation(program,'uColor'),eye:gl.getUniformLocation(program,'uEye'),gloss:gl.getUniformLocation(program,'uGloss')};
+const P=[],N=[],I=[];
+const faces=[
+ [[1,0,0],[[.5,-.5,-.5],[.5,.5,-.5],[.5,.5,.5],[.5,-.5,.5]]],
+ [[-1,0,0],[[-.5,-.5,.5],[-.5,.5,.5],[-.5,.5,-.5],[-.5,-.5,-.5]]],
+ [[0,1,0],[[-.5,.5,-.5],[-.5,.5,.5],[.5,.5,.5],[.5,.5,-.5]]],
+ [[0,-1,0],[[-.5,-.5,.5],[-.5,-.5,-.5],[.5,-.5,-.5],[.5,-.5,.5]]],
+ [[0,0,1],[[-.5,-.5,.5],[.5,-.5,.5],[.5,.5,.5],[-.5,.5,.5]]],
+ [[0,0,-1],[[.5,-.5,-.5],[-.5,-.5,-.5],[-.5,.5,-.5],[.5,.5,-.5]]]
+];
+faces.forEach(([n,v])=>{const b=P.length/3;v.forEach(p=>{P.push(...p);N.push(...n)});I.push(b,b+1,b+2,b,b+2,b+3)});
+function buf(target,data,type){const b=gl.createBuffer();gl.bindBuffer(target,b);gl.bufferData(target,new type(data),gl.STATIC_DRAW);return b}
+const pb=buf(gl.ARRAY_BUFFER,P,Float32Array), nb=buf(gl.ARRAY_BUFFER,N,Float32Array), ib=buf(gl.ELEMENT_ARRAY_BUFFER,I,Uint16Array);
+gl.bindBuffer(gl.ARRAY_BUFFER,pb);gl.enableVertexAttribArray(loc.pos);gl.vertexAttribPointer(loc.pos,3,gl.FLOAT,false,0,0);
+gl.bindBuffer(gl.ARRAY_BUFFER,nb);gl.enableVertexAttribArray(loc.normal);gl.vertexAttribPointer(loc.normal,3,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);
 
-  document.getElementById('front').onclick = () => {
-    model.cameraOrbit = '0deg 78deg 7.5m';
-    model.cameraTarget = '0m 1.25m 0m';
-    model.jumpCameraToGoal();
-  };
-  document.getElementById('angle').onclick = () => {
-    model.cameraOrbit = '32deg 74deg 7.5m';
-    model.cameraTarget = '0m 1.25m 0m';
-    model.jumpCameraToGoal();
-  };
-  document.getElementById('play').onclick = () => {
-    model.currentTime = 0;
-    model.play();
-  };
+const M={
+ id:()=>new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]),
+ mul:(a,b)=>{const o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)o[c*4+r]=a[0*4+r]*b[c*4+0]+a[1*4+r]*b[c*4+1]+a[2*4+r]*b[c*4+2]+a[3*4+r]*b[c*4+3];return o},
+ T:(x,y,z)=>{const m=M.id();m[12]=x;m[13]=y;m[14]=z;return m},
+ S:(x,y,z)=>new Float32Array([x,0,0,0,0,y,0,0,0,0,z,0,0,0,0,1]),
+ Rx:a=>{const c=Math.cos(a),s=Math.sin(a);return new Float32Array([1,0,0,0,0,c,s,0,0,-s,c,0,0,0,0,1])},
+ Ry:a=>{const c=Math.cos(a),s=Math.sin(a);return new Float32Array([c,0,-s,0,0,1,0,0,s,0,c,0,0,0,0,1])},
+ Rz:a=>{const c=Math.cos(a),s=Math.sin(a);return new Float32Array([c,s,0,0,-s,c,0,0,0,0,1,0,0,0,0,1])},
+ perspective:(fov,asp,n,f)=>{const t=1/Math.tan(fov/2),nf=1/(n-f);return new Float32Array([t/asp,0,0,0,0,t,0,0,0,0,(f+n)*nf,-1,0,0,2*f*n*nf,0])},
+ look:(e,t,u=[0,1,0])=>{let zx=e[0]-t[0],zy=e[1]-t[1],zz=e[2]-t[2],zl=Math.hypot(zx,zy,zz);zx/=zl;zy/=zl;zz/=zl;let xx=u[1]*zz-u[2]*zy,xy=u[2]*zx-u[0]*zz,xz=u[0]*zy-u[1]*zx,xl=Math.hypot(xx,xy,xz);xx/=xl;xy/=xl;xz/=xl;let yx=zy*xz-zz*xy,yy=zz*xx-zx*xz,yz=zx*xy-zy*xx;return new Float32Array([xx,yx,zx,0,xy,yy,zy,0,xz,yz,zz,0,-(xx*e[0]+xy*e[1]+xz*e[2]),-(yx*e[0]+yy*e[1]+yz*e[2]),-(zx*e[0]+zy*e[1]+zz*e[2]),1])}
+};
+const C={alu:[.075,.083,.09,1],alu2:[.12,.13,.14,1],steel:[.57,.59,.61,1],rubber:[.018,.02,.022,1],glass:[.48,.72,.84,.18],floor:[.54,.545,.53,1],accent:[.35,.37,.39,1]};
+const opaque=[],glass=[];
+function box(name,p,s,color=C.alu,gloss=.45,group='static',extra={}){const o={name,p,s,color,gloss,group,extra};(color[3]<.99?glass:opaque).push(o);return o}
+box('floor',[0,-.055,.9],[7.2,.08,4.7],C.floor,.08);
+box('exterior floor',[0,-.06,-2.0],[7.2,.07,1.1],[.47,.48,.46,1],.07);
+box('left jamb',[-2.37,1.30,0],[.10,2.60,.16]);box('right jamb',[2.37,1.30,0],[.10,2.60,.16]);box('head',[0,2.55,0],[4.84,.10,.16]);
+box('threshold',[0,.010,0],[4.84,.020,.34],C.alu,.65);box('thermal break',[0,.022,0],[4.56,.018,.055],C.rubber,.05);box('rail inner',[0,.034,.060],[4.45,.010,.018],C.steel,.8);box('rail outer',[0,.034,-.060],[4.45,.010,.018],C.steel,.8);box('drain channel',[0,.022,-.125],[4.10,.012,.035],C.rubber,.05);
+function sash(cx,z,group){
+ box(group+' left',[cx-1.10,1.30,z],[.075,2.42,.10],C.alu,.5,group);box(group+' right',[cx+1.10,1.30,z],[.075,2.42,.10],C.alu,.5,group);box(group+' top',[cx,2.48,z],[2.26,.075,.10],C.alu,.5,group);box(group+' bottom',[cx,.12,z],[2.26,.085,.11],C.alu,.5,group);
+ box(group+' seal L',[cx-1.055,1.30,z-.055],[.018,2.30,.018],C.rubber,.02,group);box(group+' seal R',[cx+1.055,1.30,z-.055],[.018,2.30,.018],C.rubber,.02,group);
+ box(group+' glass',[cx,1.30,z],[2.02,2.22,.028],C.glass,.85,group);
+}
+sash(-1.17,.05,'fixed');sash(1.17,-.05,'moving');
+box('interlock',[0,1.30,.015],[.07,2.38,.13],C.alu2,.55);
+[-.72,.72].forEach(dx=>{box('carriage',[1.17+dx,.072,-.05],[.32,.05,.09],C.steel,.75,'moving');box('wheel',[1.17+dx-.09,.045,-.05],[.075,.048,.10],[.22,.23,.24,1],.45,'moving');box('wheel',[1.17+dx+.09,.045,-.05],[.075,.048,.10],[.22,.23,.24,1],.45,'moving')});
+box('handle base',[2.105,1.25,-.115],[.105,.105,.035],C.steel,.8,'handle',{local:[0,0,0]});
+box('handle lever',[2.105,1.41,-.115],[.045,.32,.045],C.steel,.8,'handle',{local:[0,.16,0]});
+
+let theta=.30,phi=.12,radius=7.0,target=[0,1.28,0],playing=true,start=performance.now(),pausedAt=0;
+const state={moveX:0,liftY:0,handle:0};
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+function anim(ms){let t=(ms%8000);state.moveX=0;state.liftY=0;state.handle=0;let label='поворот ручки';if(t<700){state.handle=-Math.PI/2*ease(t/700);label='поворот ручки'}else if(t<1200){state.handle=-Math.PI/2;state.liftY=.012*ease((t-700)/500);label='створка приподнимается'}else if(t<3500){state.handle=-Math.PI/2;state.liftY=.012;state.moveX=-2.25*ease((t-1200)/2300);label='плавное сдвижение'}else if(t<4500){state.handle=-Math.PI/2;state.liftY=.012;state.moveX=-2.25;label='портал открыт'}else if(t<6800){state.handle=-Math.PI/2;state.liftY=.012;state.moveX=-2.25*(1-ease((t-4500)/2300));label='закрытие створки'}else if(t<7300){state.handle=-Math.PI/2;state.liftY=.012*(1-ease((t-6800)/500));label='створка опускается на уплотнители'}else{state.handle=-Math.PI/2*(1-ease((t-7300)/700));label='запирание ручкой'}document.getElementById('stepText').textContent=label;document.getElementById('progress').style.width=(t/80)+'%'}
+function modelFor(o){let px=o.p[0],py=o.p[1],pz=o.p[2];let base=M.id();if(o.group==='moving'){px+=state.moveX;py+=state.liftY;base=M.T(px,py,pz)}else if(o.group==='handle'){
+   const pivot=[2.105+state.moveX,1.25+state.liftY,-.115];const local=o.extra.local||[0,0,0];base=M.mul(M.T(...pivot),M.mul(M.Rz(state.handle),M.T(...local)));
+ }else base=M.T(px,py,pz);return M.mul(base,M.S(...o.s));}
+function draw(o){gl.uniformMatrix4fv(loc.model,false,modelFor(o));gl.uniform4fv(loc.color,o.color);gl.uniform1f(loc.gloss,o.gloss);gl.drawElements(gl.TRIANGLES,I.length,gl.UNSIGNED_SHORT,0)}
+function resize(){const d=Math.min(devicePixelRatio||1,2);const w=Math.max(1,Math.floor(canvas.clientWidth*d)),h=Math.max(1,Math.floor(canvas.clientHeight*d));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h)}}
+function frame(now){resize();if(playing){const elapsed=pausedAt+(now-start);anim(elapsed)}else anim(pausedAt);const e=[target[0]+radius*Math.sin(theta)*Math.cos(phi),target[1]+radius*Math.sin(phi),target[2]+radius*Math.cos(theta)*Math.cos(phi)];const proj=M.perspective(Math.PI/4,canvas.width/canvas.height,.05,60),view=M.look(e,target),vp=M.mul(proj,view);gl.uniformMatrix4fv(loc.vp,false,vp);gl.uniform3fv(loc.eye,e);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.disable(gl.BLEND);gl.depthMask(true);opaque.forEach(draw);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);glass.sort((a,b)=>b.p[2]-a.p[2]).forEach(draw);gl.depthMask(true);requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+let drag=false,lx=0,ly=0;canvas.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX;ly=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(!drag)return;theta-=(e.clientX-lx)*.006;phi=Math.max(-.25,Math.min(.55,phi+(e.clientY-ly)*.004));lx=e.clientX;ly=e.clientY});canvas.addEventListener('pointerup',()=>drag=false);canvas.addEventListener('pointercancel',()=>drag=false);canvas.addEventListener('wheel',e=>{e.preventDefault();radius=Math.max(3.3,Math.min(11,radius+e.deltaY*.006))},{passive:false});
+function setView(th,ph,r,t=[0,1.28,0]){theta=th;phi=ph;radius=r;target=t}
+document.getElementById('front').onclick=()=>setView(0,.06,7.0);
+document.getElementById('angle').onclick=()=>setView(.48,.16,6.6);
+document.getElementById('detail').onclick=()=>setView(.22,-.12,3.8,[0,.38,0]);
+document.getElementById('play').onclick=e=>{if(playing){pausedAt+=(performance.now()-start);playing=false;e.target.textContent='Продолжить'}else{start=performance.now();playing=true;e.target.textContent='Пауза'}};
+})();
 </script>
 </body>
 </html>
