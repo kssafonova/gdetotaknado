@@ -4,45 +4,89 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>HS Portal — 3D preview</title>
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
-    *{box-sizing:border-box} body{margin:0;background:#f4f4f2;color:#141414;font-family:Inter,Arial,sans-serif}
-    main{max-width:1440px;margin:auto;padding:28px}.top{display:flex;justify-content:space-between;gap:24px;align-items:end;margin-bottom:18px}
-    h1{font-size:clamp(28px,4vw,58px);font-weight:500;letter-spacing:-.04em;margin:0}.meta{font-size:14px;color:#666;line-height:1.5;text-align:right}
-    .viewer{height:min(78vh,860px);background:linear-gradient(#fff,#e9e9e6);border-radius:24px;overflow:hidden;border:1px solid #ddd}
-    model-viewer{width:100%;height:100%;--poster-color:transparent}.hint{display:flex;gap:22px;flex-wrap:wrap;padding:16px 2px 0;color:#626262;font-size:13px}
-    .pill{background:#fff;border:1px solid #ddd;border-radius:999px;padding:8px 12px}
-    @media(max-width:700px){main{padding:14px}.top{display:block}.meta{text-align:left;margin-top:12px}.viewer{height:72vh;border-radius:16px}}
+    *{box-sizing:border-box}
+    body{margin:0;background:#f4f4f2;color:#141414;font-family:Inter,Arial,sans-serif}
+    main{max-width:1440px;margin:auto;padding:24px}
+    .top{display:flex;justify-content:space-between;gap:24px;align-items:end;margin-bottom:16px}
+    h1{font-size:clamp(30px,4vw,58px);font-weight:500;letter-spacing:-.04em;margin:0}
+    .meta{font-size:14px;color:#666;line-height:1.5;text-align:right}
+    .viewer{position:relative;height:min(78vh,860px);min-height:520px;background:linear-gradient(#fafafa,#e5e5e1);border-radius:24px;overflow:hidden;border:1px solid #d7d7d4}
+    model-viewer{width:100%;height:100%;--poster-color:transparent;background:transparent}
+    .status{position:absolute;left:20px;top:20px;z-index:10;background:rgba(255,255,255,.92);border:1px solid #ddd;border-radius:999px;padding:9px 13px;font-size:13px;color:#555;backdrop-filter:blur(8px)}
+    .controls{display:flex;gap:10px;flex-wrap:wrap;padding-top:14px}
+    button,.link{appearance:none;border:1px solid #ccc;background:#fff;border-radius:999px;padding:10px 14px;font:inherit;font-size:13px;color:#222;cursor:pointer;text-decoration:none}
+    button:hover,.link:hover{background:#eee}
+    .hint{color:#777;font-size:12px;padding-top:10px}
+    @media(max-width:700px){main{padding:12px}.top{display:block}.meta{text-align:left;margin-top:10px}.viewer{height:68vh;min-height:430px;border-radius:16px}}
   </style>
 </head>
 <body>
 <main>
   <div class="top">
     <h1>Алюминиевый HS‑портал</h1>
-    <div class="meta">4,8 × 2,6 м · низкий порог ~20 мм<br>анимация: ручка → подъём → сдвиг → закрытие</div>
+    <div class="meta">4,8 × 2,6 м · низкий порог ~20 мм<br>ручка → подъём → сдвиг → закрытие</div>
   </div>
+
   <div class="viewer">
-    <model-viewer
-      src="models/aluminium_HS_portal_animated.glb"
+    <div class="status" id="status">Загрузка 3D‑модели…</div>
+    <model-viewer id="portal"
+      src="https://raw.githubusercontent.com/kssafonova/gdetotaknado/main/models/aluminium_HS_portal_animated.glb"
       alt="Алюминиевый подъёмно-раздвижной HS-портал"
       camera-controls
-      auto-rotate
       autoplay
       animation-name="HS_open_close"
       shadow-intensity="1"
-      environment-image="neutral"
-      exposure="1.05"
+      shadow-softness="0.8"
+      exposure="1.1"
+      loading="eager"
+      reveal="auto"
       interaction-prompt="auto"
-      camera-orbit="35deg 78deg auto"
-      min-camera-orbit="auto 55deg auto"
-      max-camera-orbit="auto 95deg auto">
+      camera-target="0m 1.25m 0m"
+      camera-orbit="0deg 78deg 7.5m"
+      field-of-view="32deg"
+      min-camera-orbit="auto 55deg 4m"
+      max-camera-orbit="auto 100deg 14m">
     </model-viewer>
   </div>
-  <div class="hint">
-    <span class="pill">Перетаскивайте — вращение</span>
-    <span class="pill">Колесо — масштаб</span>
-    <span class="pill">Анимация запускается автоматически</span>
+
+  <div class="controls">
+    <button id="front">Вид спереди</button>
+    <button id="angle">Под углом</button>
+    <button id="play">Запустить анимацию</button>
+    <a class="link" href="https://raw.githubusercontent.com/kssafonova/gdetotaknado/main/models/aluminium_HS_portal_animated.glb">Открыть GLB напрямую</a>
   </div>
+  <div class="hint">Модель можно вращать мышью/пальцем и масштабировать колесом или жестом.</div>
 </main>
+<script>
+  const model = document.getElementById('portal');
+  const status = document.getElementById('status');
+
+  model.addEventListener('load', () => {
+    status.textContent = '3D‑модель загружена';
+    setTimeout(() => status.style.opacity = '0', 1400);
+  });
+  model.addEventListener('error', (e) => {
+    console.error('model-viewer error', e);
+    status.textContent = 'Ошибка загрузки GLB — нажмите «Открыть GLB напрямую»';
+    status.style.color = '#8b1d1d';
+  });
+
+  document.getElementById('front').onclick = () => {
+    model.cameraOrbit = '0deg 78deg 7.5m';
+    model.cameraTarget = '0m 1.25m 0m';
+    model.jumpCameraToGoal();
+  };
+  document.getElementById('angle').onclick = () => {
+    model.cameraOrbit = '32deg 74deg 7.5m';
+    model.cameraTarget = '0m 1.25m 0m';
+    model.jumpCameraToGoal();
+  };
+  document.getElementById('play').onclick = () => {
+    model.currentTime = 0;
+    model.play();
+  };
+</script>
 </body>
 </html>
