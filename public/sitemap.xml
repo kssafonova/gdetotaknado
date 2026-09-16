@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://kssafonova.github.io/gdetotaknado/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/hs-portaly/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/profilnye-sistemy/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/profilnye-sistemy/schueco-ase-80-hi/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/profilnye-sistemy/reynaers-masterpatio/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/profilnye-sistemy/aluprof-mb-77hs/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/profilnye-sistemy/alutech-alt-sl160/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/proekty/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/stoimost/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/kalkulyator/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/montazh/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/o-kompanii/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/kontakty/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/blog/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/blog/chto-takoe-hs-portal/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/blog/nizkii-porog-hs-portala/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kssafonova.github.io/gdetotaknado/blog/kak-vybrat-profil-hs/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
 </urlset>
