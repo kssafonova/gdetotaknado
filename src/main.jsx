@@ -4,6 +4,7 @@ import RouterApp from './RouterApp.jsx'
 import HsPortalPage from './HsPortalPage.jsx'
 import './styles.css'
 import './pages.css'
+import './hs-mobile.css'
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '')
 let path = window.location.pathname
